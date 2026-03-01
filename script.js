@@ -128,61 +128,63 @@ form.addEventListener("submit", function(e){
 document.getElementById("formConfirmacao").addEventListener("submit", async function(e){
 
     e.preventDefault()
-    
+
     let pessoas = []
-    
+
     document.querySelectorAll("#pessoasContainer > div").forEach(pessoa=>{
-    
-    const nome = pessoa.querySelector("input").value
-    const abada = pessoa.querySelector(".select-abada").value
-    const tamanho = pessoa.querySelector(".tamanho-abada select")?.value || ""
-    
-    pessoas.push({
-        nome,
-        abada,
-        tamanho
+
+        const nome = pessoa.querySelector("input").value
+        const abada = pessoa.querySelector(".select-abada").value
+        const tamanho = pessoa.querySelector(".tamanho-abada select")?.value || ""
+
+        pessoas.push({
+            nome: nome,
+            abada: abada,
+            tamanho: tamanho
+        })
+
     })
-    
-    })
-    
+
     const fileInput = document.getElementById("comprovante")
-    
+
     let comprovante = null
-    
+
     if(fileInput.files.length){
-    
+
         const file = fileInput.files[0]
-    
-    const base64 = await new Promise(resolve=>{
-        const reader = new FileReader()
-        reader.onload = ()=> resolve(reader.result.split(",")[1])
-        reader.readAsDataURL(file)
+
+        const base64 = await new Promise(resolve=>{
+            const reader = new FileReader()
+            reader.onload = ()=> resolve(reader.result.split(",")[1])
+            reader.readAsDataURL(file)
+        })
+
+        comprovante = {
+            name: file.name,
+            type: file.type,
+            data: base64
+        }
+
+    }
+
+    fetch("https://script.google.com/macros/s/AKfycbxE31aoeDKVk4v2U1IjSgB57s1ScDBmGxd6V_AnK5N0_wTCdHFjX_3ra53i3prsGoM/exec", {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            valor: document.getElementById("valorTotal").innerText,
+            pessoas: pessoas,
+            comprovante: comprovante
+        })
     })
-    
-    comprovante = {
-        name:file.name,
-        type:file.type,
-        data:base64
-    }
-    
-    }
-    
-    fetch("https://script.google.com/macros/s/AKfycbxE31aoeDKVk4v2U1IjSgB57s1ScDBmGxd6V_AnK5N0_wTCdHFjX_3ra53i3prsGoM/exec",{
-    
-        method:"POST",
-
-        body:JSON.stringify({
-        valor:document.getElementById("valorTotal").innerText,
-        pessoas:pessoas,
-        comprovante:comprovante
-        })
-
-        })
-        .then(r=>r.json())
-        .then(()=>{
-
+    .then(()=>{
+        console.log("Dados enviados")
         alert("Presença confirmada!")
-
-        })
-
     })
+    .catch(error=>{
+        console.error("Erro:", error)
+    })
+
+})
