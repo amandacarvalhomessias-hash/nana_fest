@@ -23,7 +23,7 @@ body{
 
 .logo h4{
     font-family:'Great Vibes', cursive;
-    font-size:50px;
+    font-size:60px;
     font-weight:normal;
     line-height:0.9;
 }
@@ -109,9 +109,17 @@ button:hover{
     opacity:0.8;
 }
 
+
 .pix-section{
     margin-top:20px;
+    text-align:center;
 }
+    
+.total{
+    font-size:18px;
+    font-weight:600;
+    margin-top:10px;
+    }
 
 .pix-text{
     font-size:14px;
