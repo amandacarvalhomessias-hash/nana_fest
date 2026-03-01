@@ -21,7 +21,7 @@ body{
     margin-bottom:20px;
 }
 
-.logo h2{
+.logo h4{
     font-family:'Great Vibes', cursive;
     font-size:70px;
     font-weight:normal;
@@ -118,8 +118,9 @@ button:hover{
     margin-bottom:10px;
 }
 
-.pix-text strong{
+.pix-text b{
     color:#ffc94d;
+    font-size: 20px;
 }
 
 .file-upload{
