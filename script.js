@@ -1,27 +1,36 @@
 const precoAbada = 30;
-const chavePix = "31991453960";
 
 const qtdInput = document.getElementById("qtdPessoas");
 const container = document.getElementById("pessoasContainer");
+const comprovante = document.getElementById("comprovante");
+const btnEnviar = document.getElementById("btnEnviar");
 
-qtdInput.addEventListener("change", function () {
+let envioBloqueado = false;
+
+/* GERAR CAMPOS DE PESSOAS */
+
+qtdInput.addEventListener("change", gerarCampos);
+
+function gerarCampos(){
 
     container.innerHTML = "";
-    const qtd = this.value;
+    const qtd = Number(qtdInput.value);
 
-    for (let i = 1; i <= qtd; i++) {
+    for(let i = 1; i <= qtd; i++){
 
         const div = document.createElement("div");
 
         div.innerHTML = `
         <hr><br>
+
         <h4>Pessoa ${i}</h4>
 
         <label>Nome completo</label>
         <input type="text" required>
 
-        <label>Quer Abadá? (R$ 30)</label>
-        <select class="select-abada" onchange="mostrarTamanho(this)">
+        <label>Quer Abadá? (R$ ${precoAbada})</label>
+
+        <select class="select-abada">
             <option value="">Selecione</option>
             <option value="sim">Sim</option>
             <option value="nao">Não</option>
@@ -29,6 +38,7 @@ qtdInput.addEventListener("change", function () {
 
         <div class="tamanho-abada" style="display:none;">
             <label>Tamanho do Abadá</label>
+
             <select>
                 <option value="">Selecione</option>
                 <option>P</option>
@@ -44,48 +54,40 @@ qtdInput.addEventListener("change", function () {
     }
 
     ativarEventos();
-
-});
-
-function mostrarTamanho(select){
-
-    const tamanho = select.parentElement.querySelector(".tamanho-abada");
-
-    if(select.value === "sim"){
-        tamanho.style.display = "block";
-    }else{
-        tamanho.style.display = "none";
-    }
-
 }
 
-document.getElementById("comprovante").addEventListener("change", function(){
-
-    const fileName = document.getElementById("file-name")
-
-    if(this.files.length > 0){
-        fileName.textContent = this.files[0].name
-    }else{
-        fileName.textContent = "Nenhum selecionado"
-    }
-
-})
+/* EVENTOS DOS SELECTS */
 
 function ativarEventos(){
 
-    document.querySelectorAll(".select-abada").forEach(select => {
+    document.querySelectorAll(".select-abada").forEach(select=>{
 
-        select.addEventListener("change", calcularTotal);
+        select.addEventListener("change", function(){
+
+            const tamanho = this.parentElement.querySelector(".tamanho-abada");
+
+            if(this.value === "sim"){
+                tamanho.style.display = "block";
+            }else{
+                tamanho.style.display = "none";
+            }
+
+            calcularTotal();
+            validarEnvio();
+
+        });
 
     });
 
 }
 
+/* CALCULAR TOTAL */
+
 function calcularTotal(){
 
     let qtd = 0;
 
-    document.querySelectorAll(".select-abada").forEach(select => {
+    document.querySelectorAll(".select-abada").forEach(select=>{
 
         if(select.value === "sim"){
             qtd++;
@@ -96,15 +98,15 @@ function calcularTotal(){
     const total = qtd * precoAbada;
 
     document.getElementById("valorTotal").innerText = total.toFixed(2);
-
 }
 
-const form = document.getElementById("formConfirmacao");
-form.addEventListener("submit", function(e){
+/* VALIDAR ENVIO */
+
+function validarEnvio(){
 
     let pediuAbada = false;
 
-    document.querySelectorAll(".select-abada").forEach(select => {
+    document.querySelectorAll(".select-abada").forEach(select=>{
 
         if(select.value === "sim"){
             pediuAbada = true;
@@ -112,79 +114,138 @@ form.addEventListener("submit", function(e){
 
     });
 
-    const arquivo = document.getElementById("comprovante");
+    if(pediuAbada && comprovante.files.length === 0){
 
-    if(pediuAbada && arquivo.files.length === 0){
+        envioBloqueado = true;
+        btnEnviar.classList.add("travado");
+
+    }else{
+
+        envioBloqueado = false;
+        btnEnviar.classList.remove("travado");
+
+    }
+
+}
+
+/* MOSTRAR NOME DO ARQUIVO */
+
+comprovante.addEventListener("change", function(){
+
+    const fileName = document.getElementById("file-name");
+
+    if(this.files.length){
+        fileName.textContent = this.files[0].name;
+    }else{
+        fileName.textContent = "Nenhum selecionado";
+    }
+
+    validarEnvio();
+
+});
+
+/* ALERTA SE BOTÃO TRAVADO */
+
+btnEnviar.addEventListener("click", function(e){
+
+    if(envioBloqueado){
 
         e.preventDefault();
 
-        alert("Para confirmar é necessário anexar o comprovante de pagamento.");
+        alert("⚠️ Você selecionou abadá. É necessário anexar o comprovante para continuar.");
 
     }
 
 });
 
+/* ENVIO DO FORMULÁRIO */
 
 document.getElementById("formConfirmacao").addEventListener("submit", async function(e){
 
-    e.preventDefault()
+    if(envioBloqueado){
+        e.preventDefault();
+        return;
+    }
 
-    let pessoas = []
+    e.preventDefault();
+
+    let pessoas = [];
 
     document.querySelectorAll("#pessoasContainer > div").forEach(pessoa=>{
 
-        const nome = pessoa.querySelector("input").value
-        const abada = pessoa.querySelector(".select-abada").value
-        const tamanho = pessoa.querySelector(".tamanho-abada select")?.value || ""
+        const nome = pessoa.querySelector("input").value;
+        const abada = pessoa.querySelector(".select-abada").value;
+        const tamanho = pessoa.querySelector(".tamanho-abada select").value || "";
 
         pessoas.push({
-            nome: nome,
-            abada: abada,
-            tamanho: tamanho
-        })
+            nome,
+            abada,
+            tamanho
+        });
 
-    })
+    });
 
-    const fileInput = document.getElementById("comprovante")
+    let comprovanteData = null;
 
-    let comprovante = null
+    if(comprovante.files.length){
 
-    if(fileInput.files.length){
-
-        const file = fileInput.files[0]
+        const file = comprovante.files[0];
 
         const base64 = await new Promise(resolve=>{
-            const reader = new FileReader()
-            reader.onload = ()=> resolve(reader.result.split(",")[1])
-            reader.readAsDataURL(file)
-        })
 
-        comprovante = {
+            const reader = new FileReader();
+
+            reader.onload = ()=> resolve(reader.result.split(",")[1]);
+
+            reader.readAsDataURL(file);
+
+        });
+
+        comprovanteData = {
             name: file.name,
             type: file.type,
             data: base64
-        }
+        };
 
     }
 
+    document.getElementById("loading").style.display = "flex";
+
     fetch("https://script.google.com/macros/s/AKfycbxE31aoeDKVk4v2U1IjSgB57s1ScDBmGxd6V_AnK5N0_wTCdHFjX_3ra53i3prsGoM/exec", {
+
         method: "POST",
         mode: "no-cors",
-        headers: {
-            "Content-Type": "application/json"
+
+        headers:{
+            "Content-Type":"application/json"
         },
+
         body: JSON.stringify({
+
             valor: document.getElementById("valorTotal").innerText,
             pessoas: pessoas,
-            comprovante: comprovante
+            comprovante: comprovanteData
+
         })
-    })
-    .then(()=>{
-        console.log("Dados enviados")
-        alert("Presença confirmada!")
-    })
-    .catch(error=>{
-        console.error("Erro:", error)
+
     })
 
-})
+    .then(()=>{
+
+        document.getElementById("loading").style.display = "none";
+
+        alert("✅ Presença confirmada!");
+
+        location.reload();
+
+    })
+
+    .catch(error=>{
+
+        document.getElementById("loading").style.display = "none";
+
+        console.error("Erro:", error);
+
+    });
+
+});
