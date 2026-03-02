@@ -7,8 +7,6 @@ const btnEnviar = document.getElementById("btnEnviar");
 
 let envioBloqueado = false;
 
-/* GERAR CAMPOS DE PESSOAS */
-
 qtdInput.addEventListener("change", gerarCampos);
 
 function gerarCampos(){
@@ -56,8 +54,6 @@ function gerarCampos(){
     ativarEventos();
 }
 
-/* EVENTOS DOS SELECTS */
-
 function ativarEventos(){
 
     document.querySelectorAll(".select-abada").forEach(select=>{
@@ -81,8 +77,6 @@ function ativarEventos(){
 
 }
 
-/* CALCULAR TOTAL */
-
 function calcularTotal(){
 
     let qtd = 0;
@@ -99,8 +93,6 @@ function calcularTotal(){
 
     document.getElementById("valorTotal").innerText = total.toFixed(2);
 }
-
-/* VALIDAR ENVIO */
 
 function validarEnvio(){
 
@@ -128,8 +120,6 @@ function validarEnvio(){
 
 }
 
-/* MOSTRAR NOME DO ARQUIVO */
-
 comprovante.addEventListener("change", function(){
 
     const fileName = document.getElementById("file-name");
@@ -144,21 +134,17 @@ comprovante.addEventListener("change", function(){
 
 });
 
-/* ALERTA SE BOTÃO TRAVADO */
-
 btnEnviar.addEventListener("click", function(e){
 
     if(envioBloqueado){
 
         e.preventDefault();
 
-        alert("⚠️ Você selecionou abadá. É necessário anexar o comprovante para continuar.");
+        alert("⚠️ Você selecionou abadá. É necessário anexar o comprovante de pagamento para continuar.");
 
     }
 
 });
-
-/* ENVIO DO FORMULÁRIO */
 
 document.getElementById("formConfirmacao").addEventListener("submit", async function(e){
 
